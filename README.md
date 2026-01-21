@@ -1,6 +1,6 @@
 # Nuvo Essentia ESPHome Integration
 
-ESPHome-based integration for the Nuvo Essentia G 6-zone audio distribution system. Control your multi-zone audio system through Home Assistant using an ESP32.
+ESPHome-based integration for the Nuvo Essentia E6DM 6-zone audio distribution system. Control your multi-zone audio system through Home Assistant using an ESP32.
 
 ## Features
 
