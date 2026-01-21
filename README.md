@@ -20,16 +20,51 @@ ESPHome-based integration for the Nuvo Essentia E6DM 6-zone audio distribution s
 ## Hardware Requirements
 
 - **ESP32 NodeMCU-32S** (or compatible ESP32 board)
-- **Nuvo Essentia G** audio distribution system
-- Serial connection between ESP32 and Nuvo Essentia (TX/RX at 9600 baud)
+- **Nuvo Essentia E6DM** audio distribution system
+- **RS232 to TTL Converter Module** - [HiLetgo MAX3232 Module](https://www.amazon.com/dp/B00LPK0Z9A?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_9) or equivalent MAX3232-based converter
+- **DB9 cable** (optional, for connecting to the Nuvo's DB9 port)
+- **5V Power Supply** for ESP32 (USB power adapter or similar)
 
 ## Wiring
 
-Connect the ESP32 to your Nuvo Essentia G:
+### Serial Connection
 
-- ESP32 GPIO 17 (TX) → Nuvo RX
-- ESP32 GPIO 16 (RX) → Nuvo TX
-- GND → GND
+The Nuvo Essentia E6DM uses a standard **DB9 female RS232 port** for serial communication at 9600 baud. You'll need an RS232-to-TTL converter (MAX3232) to interface with the ESP32's TTL logic levels.
+
+**DB9 RS232 Pinout (Nuvo Essentia E6DM port):**
+- Pin 2: RX (receive to Nuvo) - RS232 levels
+- Pin 3: TX (transmit from Nuvo) - RS232 levels
+- Pin 5: GND
+
+**Connection Diagram:**
+```
+Nuvo Essentia E6DM     MAX3232 Module          ESP32
+DB9 Female             RS232-to-TTL            NodeMCU-32S
+─────────────          ──────────────          ───────────
+Pin 3 (TX)  ──────────→ R1IN → T1OUT ─────────→ GPIO 16 (RX)
+Pin 2 (RX)  ←────────── T1OUT ← R1IN ←───────── GPIO 17 (TX)
+Pin 5 (GND) ───────────→ GND ←──────────────────→ GND
+                        VCC ←──────────────────→ 3.3V
+```
+
+**Detailed Connections:**
+
+MAX3232 Module to Nuvo DB9 (RS232 side):
+- MAX3232 R1IN → Nuvo Pin 3 (TX)
+- MAX3232 T1OUT → Nuvo Pin 2 (RX)
+- MAX3232 GND → Nuvo Pin 5 (GND)
+
+MAX3232 Module to ESP32 (TTL side):
+- MAX3232 T1OUT (TTL) → ESP32 GPIO 16 (RX)
+- MAX3232 R1IN (TTL) → ESP32 GPIO 17 (TX)
+- MAX3232 VCC → ESP32 3.3V
+- MAX3232 GND → ESP32 GND
+
+**Power:**
+- ESP32 5V → 5V USB power supply
+- ESP32 GND → Common ground with MAX3232 module
+
+**Note:** The MAX3232 module converts between RS232 voltage levels (±12V) used by the Nuvo and TTL levels (0-3.3V) used by the ESP32. Make sure your MAX3232 module is powered by 3.3V to match the ESP32's logic levels.
 
 ## Installation
 
