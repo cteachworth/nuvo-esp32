@@ -1,0 +1,210 @@
+
+substitutions:
+
+  update_interval: 60s
+  publish_delay: 500ms
+
+switch:
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_default_power
+    name: Zone ${nuvo_zone_id} Default Power
+    icon: "mdi:power"
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_power
+    name: Zone ${nuvo_zone_id} Power
+    restore_mode: ALWAYS_OFF
+    optimistic: true
+    turn_on_action:
+      - script.execute: init_essentia
+      - lambda: |-
+          int s = id(nuvo_zone_${nuvo_zone_id}_default_source).state;
+          int v = id(nuvo_zone_${nuvo_zone_id}_default_volume).state;
+          int b = id(nuvo_zone_${nuvo_zone_id}_default_bass).state;
+          int t = id(nuvo_zone_${nuvo_zone_id}_default_treble).state;
+
+          ESP_LOGD("zone${nuvo_zone_id}", "Power ON - Defaults: source=%d, volume=%d, bass=%d, treble=%d", s, v, b, t);
+
+          Essentia* ess = (Essentia*)id(essentia_component);
+          ess->set_zone_on(${nuvo_zone_id});
+          ess->set_zone_unmute(${nuvo_zone_id});
+          ess->set_zone_source(${nuvo_zone_id},s);
+          ess->set_zone_volume(${nuvo_zone_id},v);
+          ess->set_zone_bass(${nuvo_zone_id},b);
+          ess->set_zone_treble(${nuvo_zone_id},t);
+      - script.execute: process_queue
+      - delay: ${publish_delay}
+      - lambda: |-
+          // Update UI to show the default values we just applied
+          id(nuvo_zone_${nuvo_zone_id}_source).publish_state(id(nuvo_zone_${nuvo_zone_id}_default_source).state);
+          id(nuvo_zone_${nuvo_zone_id}_volume).publish_state(id(nuvo_zone_${nuvo_zone_id}_default_volume).state);
+          id(nuvo_zone_${nuvo_zone_id}_bass).publish_state(id(nuvo_zone_${nuvo_zone_id}_default_bass).state);
+          id(nuvo_zone_${nuvo_zone_id}_treble).publish_state(id(nuvo_zone_${nuvo_zone_id}_default_treble).state);
+      - switch.turn_off: nuvo_zone_${nuvo_zone_id}_mute
+    turn_off_action:
+      - script.execute: init_essentia
+      - lambda: |-
+          Essentia* ess = (Essentia*)id(essentia_component);
+          ess->set_zone_off(${nuvo_zone_id});
+      - script.execute: process_queue
+      - switch.turn_off: nuvo_zone_${nuvo_zone_id}_mute
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_mute
+    name: Zone ${nuvo_zone_id} Mute
+    restore_mode: ALWAYS_OFF
+    optimistic: true
+    disabled_by_default: false
+    entity_category: config
+    turn_on_action:
+      - if:
+          condition:
+            - switch.is_on: nuvo_zone_${nuvo_zone_id}_power
+          then:
+            - script.execute: init_essentia
+            - lambda: |-
+                Essentia* ess = (Essentia*)id(essentia_component);
+                ess->set_zone_mute(${nuvo_zone_id});
+            - script.execute: process_queue
+          else:
+            - logger.log: "Cannot mute - zone is off"
+            - switch.turn_off: nuvo_zone_${nuvo_zone_id}_mute
+    turn_off_action:
+      - if:
+          condition:
+            - switch.is_on: nuvo_zone_${nuvo_zone_id}_power
+          then:
+            - script.execute: init_essentia
+            - lambda: |-
+                Essentia* ess = (Essentia*)id(essentia_component);
+                ess->set_zone_unmute(${nuvo_zone_id});
+            - script.execute: process_queue
+          else:
+            - logger.log: "Cannot unmute - zone is off"
+
+number:
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_default_source
+    name: Zone ${nuvo_zone_id} Default Source
+    icon: "mdi:playlist-music"
+    step: 1
+    min_value: 1
+    max_value: 6
+    optimistic: true
+    restore_value: true
+    initial_value: 1
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_source
+    name: Zone ${nuvo_zone_id} Source
+    icon: "mdi:playlist-music"
+    step: 1
+    min_value: 1
+    max_value: 6
+    optimistic: true
+    update_interval: never
+    set_action:
+      - script.execute: init_essentia
+      - lambda: |-
+          Essentia* ess = (Essentia*)id(essentia_component);
+          ess->set_zone_source(${nuvo_zone_id},x);
+      - script.execute: process_queue
+      - delay: 1s
+      - script.execute: init_essentia
+      - lambda: |-
+          Essentia* ess = (Essentia*)id(essentia_component);
+          ess->refresh_zone_state(${nuvo_zone_id});
+      - script.execute: process_queue
+      - delay: 1s
+      - component.update: nuvo_zone_${nuvo_zone_id}_source
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_default_volume
+    name: Zone ${nuvo_zone_id} Default Volume
+    icon: "mdi:volume-high"
+    step: 1
+    min_value: -78
+    max_value: 0
+    optimistic: true
+    restore_value: true
+    initial_value: -62 #Essentia default
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_volume
+    name: Zone ${nuvo_zone_id} Volume
+    icon: "mdi:volume-high"
+    step: 1
+    min_value: -78
+    max_value: 0
+    optimistic: true
+    update_interval: never
+    set_action:
+      - script.execute: init_essentia
+      - lambda: |-
+          Essentia* ess = (Essentia*)id(essentia_component);
+          ess->set_zone_volume(${nuvo_zone_id},x);
+      - script.execute: process_queue
+      - delay: ${publish_delay}
+      - component.update: nuvo_zone_${nuvo_zone_id}_volume
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_default_bass
+    name: Zone ${nuvo_zone_id} Default Bass
+    icon: "mdi:music-clef-bass"
+    step: 2
+    min_value: -8
+    max_value: 8
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_bass
+    name: Zone ${nuvo_zone_id} Bass
+    icon: "mdi:music-clef-bass"
+    step: 2
+    min_value: -8
+    max_value: 8
+    optimistic: true
+    update_interval: never
+    set_action:
+      - script.execute: init_essentia
+      - lambda: |-
+          Essentia* ess = (Essentia*)id(essentia_component);
+          ess->set_zone_bass(${nuvo_zone_id},x);
+      - script.execute: process_queue
+      - delay: ${publish_delay}
+      - component.update: nuvo_zone_${nuvo_zone_id}_bass
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_default_treble
+    name: Zone ${nuvo_zone_id} Default Treble
+    icon: "mdi:music-clef-treble"
+    step: 2
+    min_value: -8
+    max_value: 8
+    optimistic: true
+    restore_value: true
+    initial_value: 0
+
+  - platform: template
+    id: nuvo_zone_${nuvo_zone_id}_treble
+    name: Zone ${nuvo_zone_id} Treble
+    icon: "mdi:music-clef-treble"
+    step: 2
+    min_value: -8
+    max_value: 8
+    optimistic: true
+    update_interval: never
+    set_action:
+      - script.execute: init_essentia
+      - lambda: |-
+          Essentia* ess = (Essentia*)id(essentia_component);
+          ess->set_zone_treble(${nuvo_zone_id},x);
+      - script.execute: process_queue
+      - delay: ${publish_delay}
+      - component.update: nuvo_zone_${nuvo_zone_id}_treble

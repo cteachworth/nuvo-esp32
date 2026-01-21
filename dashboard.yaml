@@ -1,0 +1,312 @@
+decluttering_templates:
+  nuvo_zone:
+    card:
+      type: entities
+      title: '[[title]]'
+      show_header_toggle: false
+      entities:
+        - entity: switch.nuvo_essentia_zone_[[zone_id]]_power
+          name: Power
+        - entity: number.nuvo_essentia_zone_[[zone_id]]_source
+          name: Source
+          card_mod:
+            style: |
+              :host {
+                {% if is_state('switch.nuvo_essentia_zone_[[zone_id]]_power','off') %}
+                  color: var(--disabled-text-color);
+                  --paper-item-icon-color: var(--disabled-text-color);
+                  pointer-events: none;
+                {% endif %}
+              }
+        - entity: number.nuvo_essentia_zone_[[zone_id]]_volume
+          name: Volume
+          card_mod:
+            style: |
+              :host {
+                {% if is_state('switch.nuvo_essentia_zone_[[zone_id]]_power','off') %}
+                  color: var(--disabled-text-color);
+                  --paper-item-icon-color: var(--disabled-text-color);
+                  pointer-events: none;
+                {% endif %}
+              }
+        - entity: number.nuvo_essentia_zone_[[zone_id]]_treble
+          name: Treble
+          card_mod:
+            style: |
+              :host {
+                {% if is_state('switch.nuvo_essentia_zone_[[zone_id]]_power','off') %}
+                  color: var(--disabled-text-color);
+                  --paper-item-icon-color: var(--disabled-text-color);
+                  pointer-events: none;
+                {% endif %}
+              }
+        - entity: number.nuvo_essentia_zone_[[zone_id]]_bass
+          name: Bass
+          card_mod:
+            style: |
+              :host {
+                {% if is_state('switch.nuvo_essentia_zone_[[zone_id]]_power','off') %}
+                  color: var(--disabled-text-color);
+                  --paper-item-icon-color: var(--disabled-text-color);
+                  pointer-events: none;
+                {% endif %}
+              }
+        - entity: switch.nuvo_essentia_zone_[[zone_id]]_mute
+          name: Mute
+          card_mod:
+            style: |
+              :host {
+                {% if is_state('switch.nuvo_essentia_zone_[[zone_id]]_power','off') %}
+                  color: var(--disabled-text-color);
+                  --paper-item-icon-color: var(--disabled-text-color);
+                  pointer-events: none;
+                {% endif %}
+              }
+        - type: custom:expander-card
+          title: Defaults
+          gap: 0
+          padding: 0
+          child-padding: 0
+          card_mod:
+            style: |
+              ha-card {
+                border:none;
+              }
+          title-card:
+            type: markdown
+            content: Defaults
+            card_mod:
+              style: |
+                ha-card {
+                 border:none;
+                }
+          title-card-button-overlay: false
+          title-card-padding: 0
+          cards:
+            - type: entities
+              entities:
+                - entity: switch.nuvo_essentia_zone_[[zone_id]]_default_power
+                  name: Power
+                - entity: number.nuvo_essentia_zone_[[zone_id]]_default_source
+                  name: Source
+                - entity: number.nuvo_essentia_zone_[[zone_id]]_default_volume
+                  name: Volume
+                - entity: number.nuvo_essentia_zone_[[zone_id]]_default_treble
+                  name: Treble
+                - entity: number.nuvo_essentia_zone_[[zone_id]]_default_bass
+                  name: Bass
+              card_mod:
+                style: |
+                  ha-card {
+                   border:none;
+                  }
+                  .card-content {
+                    padding: 0;
+                  }
+views:
+  - type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: media-control
+            entity: media_player.home_stero_universal
+            name: Home Stereo
+            grid_options:
+              columns: 12
+              rows: 4
+          - type: tile
+            grid_options:
+              columns: 6
+              rows: 2
+            entity: switch.nuvo_essentia_all_zone_power
+            name: Power
+            show_entity_picture: false
+            hide_state: true
+            vertical: true
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            grid_options:
+              columns: 6
+              rows: 2
+            entity: switch.nuvo_essentia_all_zone_mute
+            name: Mute
+            icon: mdi:volume-off
+            hide_state: true
+            vertical: true
+            tap_action:
+              action: toggle
+            features_position: bottom
+      - type: grid
+        cards:
+          - type: tile
+            entity: switch.nuvo_essentia_zone_1_power
+            name: Kitchen
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_1_mute
+            name: Kitchen
+            icon: mdi:volume-off
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_2_power
+            name: Dining Room
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_2_mute
+            name: Dining Room
+            icon: mdi:volume-off
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_3_power
+            name: Sun Room
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_3_mute
+            name: Sun Room
+            icon: mdi:volume-off
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_4_power
+            name: Bedroom
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_4_mute
+            name: Bedroom
+            icon: mdi:volume-off
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_5_power
+            name: Porch
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_5_mute
+            name: Porch
+            icon: mdi:volume-off
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_6_power
+            name: Unassigned
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+          - type: tile
+            entity: switch.nuvo_essentia_zone_6_mute
+            name: Unassigned
+            icon: mdi:volume-off
+            hide_state: true
+            vertical: false
+            tap_action:
+              action: toggle
+            features_position: bottom
+    cards: []
+    icon: mdi:speaker-multiple
+    path: home
+  - badges: []
+    cards:
+      - type: custom:decluttering-card
+        template: nuvo_zone
+        variables:
+          - zone_id: 1
+          - title: Kitchen
+      - type: custom:decluttering-card
+        template: nuvo_zone
+        variables:
+          - zone_id: 2
+          - title: Dining Room
+      - type: custom:decluttering-card
+        template: nuvo_zone
+        variables:
+          - zone_id: 3
+          - title: Sun Room
+      - type: custom:decluttering-card
+        template: nuvo_zone
+        variables:
+          - zone_id: 4
+          - title: Master Bedroom
+      - type: custom:decluttering-card
+        template: nuvo_zone
+        variables:
+          - zone_id: 5
+          - title: Porch
+      - type: custom:decluttering-card
+        template: nuvo_zone
+        variables:
+          - zone_id: 6
+          - title: Unassigned
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: Soundbar
+            show_header_toggle: false
+            entities:
+              - entity: switch.yas_soundbar_power
+                name: Power
+                icon: mdi:power
+              - entity: select.yas_soundbar_input
+                name: Input
+                icon: mdi:playlist-music
+              - entity: number.yas_soundbar_volume
+                name: Volume
+                icon: mdi:volume-high
+              - entity: number.yas_soundbar_subwoofer
+                name: Subwoofer
+                icon: mdi:music-clef-bass
+              - entity: switch.yas_soundbar_mute
+                name: Mute
+                icon: mdi:volume-mute
+              - entity: select.yas_soundbar_surround
+                name: Surround
+                icon: mdi:surround-sound
+              - entity: switch.yas_soundbar_clear_voice
+                name: Clear Voice
+                icon: mdi:account-voice
+              - entity: switch.yas_soundbar_bass_extension
+                name: Bass Extension
+                icon: mdi:smoke-detector
+    type: masonry
+    icon: mdi:cog

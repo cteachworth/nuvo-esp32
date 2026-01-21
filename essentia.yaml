@@ -1,0 +1,214 @@
+substitutions:
+  name: nuvo
+  friendly_name: Nuvo Essentia
+  cmd_delay: 100ms
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  includes:
+    - nuvo/essentia.h
+  compile_process_limit: 2
+  on_boot:
+    priority: -100
+    then:
+      - delay: 2s
+      - lambda: |-
+          ESP_LOGD("boot", "Checking default power states...");
+          if (id(nuvo_zone_1_default_power).state) {
+            ESP_LOGD("boot", "Zone 1 default power is ON, turning on");
+            id(nuvo_zone_1_power).turn_on();
+          } else {
+            ESP_LOGD("boot", "Zone 1 default power is OFF, skipping");
+          }
+          if (id(nuvo_zone_2_default_power).state) {
+            ESP_LOGD("boot", "Zone 2 default power is ON, turning on");
+            id(nuvo_zone_2_power).turn_on();
+          } else {
+            ESP_LOGD("boot", "Zone 2 default power is OFF, skipping");
+          }
+          if (id(nuvo_zone_3_default_power).state) {
+            ESP_LOGD("boot", "Zone 3 default power is ON, turning on");
+            id(nuvo_zone_3_power).turn_on();
+          } else {
+            ESP_LOGD("boot", "Zone 3 default power is OFF, skipping");
+          }
+          if (id(nuvo_zone_4_default_power).state) {
+            ESP_LOGD("boot", "Zone 4 default power is ON, turning on");
+            id(nuvo_zone_4_power).turn_on();
+          } else {
+            ESP_LOGD("boot", "Zone 4 default power is OFF, skipping");
+          }
+          if (id(nuvo_zone_5_default_power).state) {
+            ESP_LOGD("boot", "Zone 5 default power is ON, turning on");
+            id(nuvo_zone_5_power).turn_on();
+          } else {
+            ESP_LOGD("boot", "Zone 5 default power is OFF, skipping");
+          }
+          if (id(nuvo_zone_6_default_power).state) {
+            ESP_LOGD("boot", "Zone 6 default power is ON, turning on");
+            id(nuvo_zone_6_power).turn_on();
+          } else {
+            ESP_LOGD("boot", "Zone 6 default power is OFF, skipping");
+          }
+
+esp32:
+  board: nodemcu-32s
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "b0AT63Fz4EqAbbUw1tDeBrHP05VmDc6Wj6hUoG345b0="
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap: {}  # Auto-generate random credentials for fallback AP
+
+# Enable Serial Port Service
+uart:
+  - id: uart_bus
+    tx_pin: 17
+    rx_pin: 16
+    baud_rate: 9600
+    debug:
+      direction: BOTH
+      dummy_receiver: true
+      after:
+        delimiter: "\r"
+      sequence:
+        - lambda: UARTDebug::log_string(direction, bytes);
+
+globals:
+  - id: essentia_component
+    type: void*
+    restore_value: no
+    initial_value: 'nullptr'
+
+script:
+  - id: init_essentia
+    mode: single
+    then:
+      - lambda: |-
+          if (id(essentia_component) == nullptr) {
+            Essentia* ess = new Essentia(id(uart_bus));
+            id(essentia_component) = ess;
+            App.register_component(ess);
+          }
+
+
+  - id: process_queue
+    mode: single
+    then:
+      while:
+        condition:
+          - lambda: |-
+              Essentia* ess = (Essentia*)id(essentia_component);
+              return ess != nullptr && !ess->get_is_queue_empty();
+        then:
+          - lambda: |-
+              Essentia* ess = (Essentia*)id(essentia_component);
+              ess->process_queue();
+          - delay: ${cmd_delay}
+
+interval:
+  - interval: 60s
+    then:
+      - lambda: |-
+          ESP_LOGD("essentia", "60s interval: refreshing all zone states");
+          Essentia* ess = (Essentia*)id(essentia_component);
+          if (ess != nullptr) {
+            ess->refresh_state();
+          }
+      - script.execute: process_queue
+
+switch:
+  - platform: template
+    id: "set_all_on"
+    name: "All Zone Power"
+    optimistic: false
+    restore_mode: RESTORE_DEFAULT_OFF
+    lambda: |-
+      return id(nuvo_zone_1_power).state &&
+             id(nuvo_zone_2_power).state &&
+             id(nuvo_zone_3_power).state &&
+             id(nuvo_zone_4_power).state &&
+             id(nuvo_zone_5_power).state &&
+             id(nuvo_zone_6_power).state;
+    turn_on_action:
+      - switch.turn_on: nuvo_zone_1_power
+      - switch.turn_on: nuvo_zone_2_power
+      - switch.turn_on: nuvo_zone_3_power
+      - switch.turn_on: nuvo_zone_4_power
+      - switch.turn_on: nuvo_zone_5_power
+      - switch.turn_on: nuvo_zone_6_power
+    turn_off_action:
+      - switch.turn_off: nuvo_zone_1_power
+      - switch.turn_off: nuvo_zone_2_power
+      - switch.turn_off: nuvo_zone_3_power
+      - switch.turn_off: nuvo_zone_4_power
+      - switch.turn_off: nuvo_zone_5_power
+      - switch.turn_off: nuvo_zone_6_power
+
+  - platform: template
+    id: "set_all_mute"
+    name: "All Zone Mute"
+    optimistic: false
+    restore_mode: RESTORE_DEFAULT_OFF
+    lambda: |-
+      return id(nuvo_zone_1_mute).state &&
+             id(nuvo_zone_2_mute).state &&
+             id(nuvo_zone_3_mute).state &&
+             id(nuvo_zone_4_mute).state &&
+             id(nuvo_zone_5_mute).state &&
+             id(nuvo_zone_6_mute).state;
+    turn_on_action:
+      - switch.turn_on: nuvo_zone_1_mute
+      - switch.turn_on: nuvo_zone_2_mute
+      - switch.turn_on: nuvo_zone_3_mute
+      - switch.turn_on: nuvo_zone_4_mute
+      - switch.turn_on: nuvo_zone_5_mute
+      - switch.turn_on: nuvo_zone_6_mute
+    turn_off_action:
+      - switch.turn_off: nuvo_zone_1_mute
+      - switch.turn_off: nuvo_zone_2_mute
+      - switch.turn_off: nuvo_zone_3_mute
+      - switch.turn_off: nuvo_zone_4_mute
+      - switch.turn_off: nuvo_zone_5_mute
+      - switch.turn_off: nuvo_zone_6_mute
+
+# Setup the zones
+packages:
+  nuvo_zone_1: !include
+    file: zone.yaml
+    vars:
+      nuvo_zone_id: 1
+  nuvo_zone_2: !include
+    file: zone.yaml
+    vars:
+      nuvo_zone_id: 2
+  nuvo_zone_3: !include
+    file: zone.yaml
+    vars:
+      nuvo_zone_id: 3
+  nuvo_zone_4: !include
+    file: zone.yaml
+    vars:
+      nuvo_zone_id: 4
+  nuvo_zone_5: !include
+    file: zone.yaml
+    vars:
+      nuvo_zone_id: 5
+  nuvo_zone_6: !include
+    file: zone.yaml
+    vars:
+      nuvo_zone_id: 6
