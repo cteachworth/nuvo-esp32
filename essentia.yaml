@@ -131,6 +131,11 @@ interval:
           }
       - script.execute: process_queue
 
+sensor:
+  - platform: internal_temperature
+    name: "Internal Temperature"
+    update_interval: 60s
+    
 switch:
   - platform: template
     id: "set_all_on"
@@ -185,6 +190,7 @@ switch:
       - switch.turn_off: nuvo_zone_4_mute
       - switch.turn_off: nuvo_zone_5_mute
       - switch.turn_off: nuvo_zone_6_mute
+      
 
 # Setup the zones
 packages:

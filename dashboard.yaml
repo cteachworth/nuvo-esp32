@@ -210,26 +210,31 @@ views:
               columns: 12
               rows: 4
           - type: tile
-            grid_options:
-              columns: 6
-              rows: 2
+            entity: media_player.living_room_wiim_group_master
+            name: Volume
+            icon: mdi:volume-high
+            show_entity_picture: false
+            hide_state: false
+            vertical: false
+            features:
+              - type: media-player-volume-slider
+            features_position: inline
+          - type: tile
             entity: switch.nuvo_essentia_all_zone_power
             name: Power
+            icon: mdi:power
             show_entity_picture: false
             hide_state: true
-            vertical: true
+            vertical: false
             tap_action:
               action: toggle
             features_position: bottom
           - type: tile
-            grid_options:
-              columns: 6
-              rows: 2
             entity: switch.nuvo_essentia_all_zone_mute
-            name: Mute
+            name: Mute All
             icon: mdi:volume-off
             hide_state: true
-            vertical: true
+            vertical: false
             tap_action:
               action: toggle
             features_position: bottom
@@ -326,8 +331,8 @@ views:
               action: toggle
             features_position: bottom
           - type: tile
-            entity: switch.nuvo_essentia_zone_6_power
-            name: Unassigned
+            entity: switch.yas_soundbar_power
+            name: Soundbar
             icon: mdi:speaker
             hide_state: true
             vertical: false
@@ -335,8 +340,8 @@ views:
               action: toggle
             features_position: bottom
           - type: tile
-            entity: switch.nuvo_essentia_zone_6_mute
-            name: Unassigned
+            entity: switch.yas_soundbar_mute
+            name: Soundbar
             icon: mdi:volume-off
             hide_state: true
             vertical: false
@@ -346,7 +351,16 @@ views:
     cards: []
     icon: mdi:speaker-multiple
     path: home
+    header:
+      layout: center
+      badges_position: top
+      badges_wrap: wrap
   - badges: []
+    card_mod:
+      style: |
+        .wrapper {
+          padding-top: 0px !important;
+        }
     cards:
       - type: custom:stack-in-card
         mode: vertical
@@ -387,7 +401,7 @@ views:
               - type: tile
                 entity: switch.yas_soundbar_mute
                 name: Mute
-                icon: mdi:volume-mute
+                icon: mdi:volume-off
                 hide_state: true
                 tap_action:
                   action: toggle
