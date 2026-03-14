@@ -325,6 +325,8 @@ class Essentia : public Component, public UARTDevice {
                 zone->volume = v;
                 zone->mute = false;
             }
+
+            publish_connect_state(zone_id + 1, *zone);
         }
 
         void parse_zone_sr(string response)
@@ -339,6 +341,88 @@ class Essentia : public Component, public UARTDevice {
             zone->treble = parts[2].substr(4, 3);
             zone->group = parts[3].substr(3, 1);
             zone->vrst = parts[4].substr(4, 1);
+
+            publish_zone_state(zone_id + 1, *zone);
+        }
+
+        void publish_connect_state(int zone_num, const Zone& zone) {
+            bool power_on = zone.power == "ON";
+            float source = zone.source.empty() ? 1.0f : stof(zone.source);
+            switch (zone_num) {
+                case 1:
+                    id(nuvo_zone_1_power).publish_state(power_on);
+                    id(nuvo_zone_1_mute).publish_state(zone.mute);
+                    id(nuvo_zone_1_source).publish_state(source);
+                    if (!zone.mute && !zone.volume.empty())
+                        id(nuvo_zone_1_volume).publish_state(stof(zone.volume));
+                    break;
+                case 2:
+                    id(nuvo_zone_2_power).publish_state(power_on);
+                    id(nuvo_zone_2_mute).publish_state(zone.mute);
+                    id(nuvo_zone_2_source).publish_state(source);
+                    if (!zone.mute && !zone.volume.empty())
+                        id(nuvo_zone_2_volume).publish_state(stof(zone.volume));
+                    break;
+                case 3:
+                    id(nuvo_zone_3_power).publish_state(power_on);
+                    id(nuvo_zone_3_mute).publish_state(zone.mute);
+                    id(nuvo_zone_3_source).publish_state(source);
+                    if (!zone.mute && !zone.volume.empty())
+                        id(nuvo_zone_3_volume).publish_state(stof(zone.volume));
+                    break;
+                case 4:
+                    id(nuvo_zone_4_power).publish_state(power_on);
+                    id(nuvo_zone_4_mute).publish_state(zone.mute);
+                    id(nuvo_zone_4_source).publish_state(source);
+                    if (!zone.mute && !zone.volume.empty())
+                        id(nuvo_zone_4_volume).publish_state(stof(zone.volume));
+                    break;
+                case 5:
+                    id(nuvo_zone_5_power).publish_state(power_on);
+                    id(nuvo_zone_5_mute).publish_state(zone.mute);
+                    id(nuvo_zone_5_source).publish_state(source);
+                    if (!zone.mute && !zone.volume.empty())
+                        id(nuvo_zone_5_volume).publish_state(stof(zone.volume));
+                    break;
+                case 6:
+                    id(nuvo_zone_6_power).publish_state(power_on);
+                    id(nuvo_zone_6_mute).publish_state(zone.mute);
+                    id(nuvo_zone_6_source).publish_state(source);
+                    if (!zone.mute && !zone.volume.empty())
+                        id(nuvo_zone_6_volume).publish_state(stof(zone.volume));
+                    break;
+            }
+        }
+
+        void publish_zone_state(int zone_num, const Zone& zone) {
+            float bass = zone.bass.empty() ? 0.0f : stof(zone.bass);
+            float treble = zone.treble.empty() ? 0.0f : stof(zone.treble);
+            switch (zone_num) {
+                case 1:
+                    id(nuvo_zone_1_bass).publish_state(bass);
+                    id(nuvo_zone_1_treble).publish_state(treble);
+                    break;
+                case 2:
+                    id(nuvo_zone_2_bass).publish_state(bass);
+                    id(nuvo_zone_2_treble).publish_state(treble);
+                    break;
+                case 3:
+                    id(nuvo_zone_3_bass).publish_state(bass);
+                    id(nuvo_zone_3_treble).publish_state(treble);
+                    break;
+                case 4:
+                    id(nuvo_zone_4_bass).publish_state(bass);
+                    id(nuvo_zone_4_treble).publish_state(treble);
+                    break;
+                case 5:
+                    id(nuvo_zone_5_bass).publish_state(bass);
+                    id(nuvo_zone_5_treble).publish_state(treble);
+                    break;
+                case 6:
+                    id(nuvo_zone_6_bass).publish_state(bass);
+                    id(nuvo_zone_6_treble).publish_state(treble);
+                    break;
+            }
         }
 
         vector<string> split(string str, string delimiter)
